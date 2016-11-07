@@ -33,10 +33,12 @@ namespace JscServer
             // Add framework services.
             services.AddMvc();
 
+            services.AddCors(options => options.AddPolicy("AllowAll", builder => builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
+
             services.AddDbContext<JscDbContext>(options => options.UseMySql(Configuration.GetConnectionString("mysql")));
 
             services.AddTransient<IInjectionService, JsCoverInjectionService>();
-            services.AddTransient<ICoverageService, JsCoverCoverageService>();      
+            services.AddTransient<ICoverageService, JsCoverCoverageService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -48,6 +50,8 @@ namespace JscServer
             app.UseDeveloperExceptionPage();
 
             app.UseMvc();
+
+            app.UseCors("AllowAll");
 
             app.UseStaticFiles();
         }
