@@ -9,6 +9,7 @@ using System.Security.Cryptography;
 using System.Text;
 using JscServer.Models;
 using Microsoft.AspNetCore.Hosting;
+using System.Threading;
 
 namespace JscServer.Services
 {
@@ -17,9 +18,10 @@ namespace JscServer.Services
         Task<Injection> InjectAsync(string url);
     }
 
-
     public class JsCoverInjectionService : IInjectionService
     {
+        private static object injectLock = new object();
+
         private JscDbContext _context;
         private IHostingEnvironment _env;
 
@@ -37,19 +39,51 @@ namespace JscServer.Services
             _injectedJsPath = Path.Combine(_env.ContentRootPath, "wwwroot", "jsc", "injected");
         }
 
-        public async Task<Injection> InjectAsync(string url) {
+        public async Task<Injection> InjectAsync(string url)
+        {
             var content = await DownloadAsync(url).ConfigureAwait(false);
             var id = Identify(content);
             var fileName = id + ".js";
-            File.WriteAllText(Path.Combine(_originalJsPath, fileName), content);
-            await InjectFileAsync(fileName).ConfigureAwait(false);
 
-            return new Injection
+            var existingInjection = _context.Injections.Where(i => i.Id == id).FirstOrDefault();
+
+            if (existingInjection != null)
             {
-                Id = id,
-                OriginalUrl = url,
-                InjectedPath = Path.Combine("jsc", "injected", fileName)
-            };
+                return existingInjection;
+            }
+            
+            var lockTaken = false;
+            try
+            {
+                Monitor.Enter(injectLock, ref lockTaken);
+
+                existingInjection = _context.Injections.Where(i => i.Id == id).FirstOrDefault();
+
+                if (existingInjection != null)
+                {
+                    return existingInjection;
+                }
+
+                File.WriteAllText(Path.Combine(_originalJsPath, fileName), content);
+                await InjectFileAsync(fileName).ConfigureAwait(false);
+
+                var newInjection = new Injection
+                {
+                    Id = id,
+                    OriginalUrl = url,
+                    InjectedPath = Path.Combine("jsc", "injected", fileName)
+                };
+
+                _context.Injections.Add(newInjection);
+                await _context.SaveChangesAsync();
+
+                return newInjection;
+            }
+            finally
+            {
+                if (lockTaken) Monitor.Exit(injectLock);
+            }
+
         }
 
         private async Task<string> DownloadAsync(string url)
@@ -70,7 +104,7 @@ namespace JscServer.Services
                 return strResult.Replace("-", "");
             }
         }
-        
+
         private async Task InjectFileAsync(string fileName)
         {
             string originalFile = Path.Combine(_originalJsPath, fileName);
@@ -87,7 +121,8 @@ namespace JscServer.Services
             cmd.WaitForExit();
             string error = await cmd.StandardError.ReadToEndAsync().ConfigureAwait(false);
 
-            if (error.Contains("Exception")) {
+            if (error.Contains("Exception"))
+            {
                 throw new IOException(error);
             }
         }

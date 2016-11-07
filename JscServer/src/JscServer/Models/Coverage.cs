@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -7,8 +8,12 @@ namespace JscServer.Models
 {
     public class Coverage
     {
-        public String Id { get; set; }
-        public String Url { get; set; }
-        public String Data { get; set; }
+        public string Id { get; set; }
+        public string Url { get; set; }
+        public string Data { get; set; }
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public DateTime InsertTime { get; set; }
+        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+        public DateTime UpdateTime { get; set; }
     }
 }

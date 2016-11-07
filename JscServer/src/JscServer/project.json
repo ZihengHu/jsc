@@ -1,8 +1,8 @@
 {
   "dependencies": {
     "Microsoft.NETCore.App": {
-      "version": "1.0.1",
-      "type": "platform"
+      "type": "platform",
+      "version": "1.0.1"
     },
     "Microsoft.AspNetCore.Mvc": "1.0.1",
     "Microsoft.AspNetCore.Routing": "1.0.1",
@@ -37,6 +37,11 @@
     }
   },
 
+  "runtimes": {
+    "win10-x64": {}
+  },
+    
+
   "buildOptions": {
     "emitEntryPoint": true,
     "preserveCompilationContext": true
@@ -53,6 +58,8 @@
       "wwwroot",
       "**/*.cshtml",
       "appsettings.json",
+      "hosting.json",
+      "jscover.jar",
       "web.config"
     ]
   },

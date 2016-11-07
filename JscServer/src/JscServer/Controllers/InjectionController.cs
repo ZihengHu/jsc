@@ -11,6 +11,7 @@ namespace JscServer.Controllers
     public class InjectionController : ControllerBase
     {
         private readonly IInjectionService _injectionService;
+
         public InjectionController(IInjectionService injectionService)
         {
             _injectionService = injectionService;

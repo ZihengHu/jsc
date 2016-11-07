@@ -9,6 +9,5 @@ namespace JscServer.Controllers
 {
     [Route("jsc/[controller]")]
     public class ControllerBase: Controller
-    {        
-    }
+    { }
 }

@@ -36,7 +36,7 @@ namespace JscServer
             services.AddDbContext<JscDbContext>(options => options.UseMySql(Configuration.GetConnectionString("mysql")));
 
             services.AddTransient<IInjectionService, JsCoverInjectionService>();
-
+            services.AddTransient<ICoverageService, JsCoverCoverageService>();      
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

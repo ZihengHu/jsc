@@ -8,9 +8,10 @@ using JscServer.Models;
 namespace JscServer.Migrations
 {
     [DbContext(typeof(JscDbContext))]
-    partial class JscDbContextModelSnapshot : ModelSnapshot
+    [Migration("20161107060724_MyFirstMigration")]
+    partial class MyFirstMigration
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
             modelBuilder
                 .HasAnnotation("ProductVersion", "1.0.1");
