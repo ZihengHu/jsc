@@ -44,7 +44,7 @@ namespace JscServer.Services
                 {
                     var oldCoverageData = (JObject)JsonConvert.DeserializeObject(oldCoverage.Data);
                     var newCoverageData = (JObject)JsonConvert.DeserializeObject(newCoverage.Data);
-                    
+
                 }
                 await _context.SaveChangesAsync();
             }

@@ -10,6 +10,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
 using JscServer.Models;
 using JscServer.Services;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Cors.Internal;
 
 namespace JscServer
 {
@@ -32,8 +34,12 @@ namespace JscServer
         {
             // Add framework services.
             services.AddMvc();
-
-            services.AddCors(options => options.AddPolicy("AllowAll", builder => builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
+            services.AddCors(options =>
+                options.AddPolicy("AllowAll", builder => builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
+            services.Configure<MvcOptions>(options =>
+            {
+                options.Filters.Add(new CorsAuthorizationFilterFactory("AllowAll"));
+            });
 
             services.AddDbContext<JscDbContext>(options => options.UseMySql(Configuration.GetConnectionString("mysql")));
 
@@ -50,8 +56,6 @@ namespace JscServer
             app.UseDeveloperExceptionPage();
 
             app.UseMvc();
-
-            app.UseCors("AllowAll");
 
             app.UseStaticFiles();
         }
