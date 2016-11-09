@@ -14,12 +14,11 @@ namespace JscServer.Services
         Task MergeCoverageAsync(Coverage newCoverage);
 
         Task<Coverage> GetCoverageAsync(string url);
-
     }
 
     public class JsCoverCoverageService : ICoverageService
     {
-        private static object merageLock = new object();
+        private static SemaphoreSlim mergeSemaphore = new SemaphoreSlim(1, 1);
         private JscDbContext _context;
 
         public JsCoverCoverageService(JscDbContext context)
@@ -29,11 +28,9 @@ namespace JscServer.Services
 
         public async Task MergeCoverageAsync(Coverage newCoverage)
         {
-            var lockTaken = false;
+            await mergeSemaphore.WaitAsync().ConfigureAwait(false);
             try
-            {
-                Monitor.Enter(merageLock, ref lockTaken);
-
+            {                
                 var oldCoverage = _context.Coverages.Where(c => c.Id == newCoverage.Id).FirstOrDefault();
 
                 if (oldCoverage == null)
@@ -77,11 +74,11 @@ namespace JscServer.Services
 
                     oldCoverage.Data = JsonConvert.SerializeObject(mergedCoverageData);
                 }
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync().ConfigureAwait(false);
             }
             finally
             {
-                if (lockTaken) Monitor.Exit(merageLock);
+                mergeSemaphore.Release();
             }
         }
 
