@@ -14,6 +14,4 @@ namespace JscServer.Models
         public DbSet<Injection> Injections { get; set; }
         public DbSet<Coverage> Coverages { get; set; }
     }
-
-    
 }

@@ -42,9 +42,40 @@ namespace JscServer.Services
                 }
                 else
                 {
-                    var oldCoverageData = (JObject)JsonConvert.DeserializeObject(oldCoverage.Data);
-                    var newCoverageData = (JObject)JsonConvert.DeserializeObject(newCoverage.Data);
+                    var oldCoverageData = JsonConvert.DeserializeObject<CoverageData>(oldCoverage.Data);
+                    var newCoverageData = JsonConvert.DeserializeObject<CoverageData>(newCoverage.Data);
 
+                    var mergedCoverageData = new CoverageData() { };
+
+                    mergedCoverageData.LineData = oldCoverageData.LineData.Select((n, i) => n + newCoverageData.LineData.ElementAt(i));
+                    mergedCoverageData.FunctionData = oldCoverageData.FunctionData.Select((n, i) => n + newCoverageData.FunctionData.ElementAt(i));
+
+                    mergedCoverageData.BranchData = new Dictionary<string, IEnumerable<BranchData>>();
+                    foreach(KeyValuePair<string, IEnumerable<BranchData>> entry in oldCoverageData.BranchData)
+                    {
+                        mergedCoverageData.BranchData.Add(entry.Key, entry.Value.Select((oldBranchData, i) =>
+                        {
+                            if (oldBranchData == null)
+                            {
+                                return null;
+                            }
+
+                            IEnumerable<BranchData> newBranchDataList = null;
+                            newCoverageData.BranchData.TryGetValue(entry.Key, out newBranchDataList);
+                            var newBranchData = newBranchDataList.ElementAt(i);
+
+                            return new BranchData
+                            {
+                                Position = oldBranchData.Position,
+                                NodeLength = oldBranchData.NodeLength,
+                                Src = oldBranchData.Src,
+                                EvalFalse = oldBranchData.EvalFalse + newBranchData.EvalFalse,
+                                EvalTrue = oldBranchData.EvalTrue + newBranchData.EvalTrue,
+                            };
+                        }));
+                    }
+
+                    oldCoverage.Data = JsonConvert.SerializeObject(mergedCoverageData);
                 }
                 await _context.SaveChangesAsync();
             }

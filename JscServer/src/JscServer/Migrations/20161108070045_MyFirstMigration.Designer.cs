@@ -8,7 +8,7 @@ using JscServer.Models;
 namespace JscServer.Migrations
 {
     [DbContext(typeof(JscDbContext))]
-    [Migration("20161107060724_MyFirstMigration")]
+    [Migration("20161108070045_MyFirstMigration")]
     partial class MyFirstMigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
