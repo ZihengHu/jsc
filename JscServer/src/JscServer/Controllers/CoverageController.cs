@@ -19,14 +19,14 @@ namespace JscServer.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> PostAsync([FromBody] List<Coverage> coverages)
+        public async Task<IActionResult> PostAsync([FromBody] Coverage[] coverages)
         {
             await Task.WhenAll(coverages.Select(coverage => _coverageService.MergeCoverageAsync(coverage))).ConfigureAwait(false);
             return Ok();
         }
 
         [HttpGet]
-        public async Task<Coverage[]> GetAsync([FromQuery(Name = "url")] List<string> urls)
+        public async Task<Coverage[]> GetAsync([FromQuery(Name = "url")] string[] urls)
         {
             return await Task.WhenAll(urls.Select(url => _coverageService.GetCoverageAsync(url))).ConfigureAwait(false);
         }

@@ -18,7 +18,7 @@ namespace JscServer.Controllers
         }
 
         [HttpGet]
-        public async Task<Injection[]> GetAsync([FromQuery(Name = "url")] List<string> urls)
+        public async Task<Injection[]> GetAsync([FromQuery(Name = "url")] string[] urls)
         {
             return await Task.WhenAll(urls.Select(url => _injectionService.InjectAsync(url))).ConfigureAwait(false);
         }

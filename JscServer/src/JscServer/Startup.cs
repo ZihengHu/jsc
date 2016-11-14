@@ -34,12 +34,8 @@ namespace JscServer
         {
             // Add framework services.
             services.AddMvc();
-            services.AddCors(options =>
-                options.AddPolicy("AllowAll", builder => builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
-            services.Configure<MvcOptions>(options =>
-            {
-                options.Filters.Add(new CorsAuthorizationFilterFactory("AllowAll"));
-            });
+            services.AddCors(options => options.AddPolicy("AllowAll",
+                builder => builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()));
 
             services.AddDbContext<JscDbContext>(options => options.UseMySql(Configuration.GetConnectionString("mysql")));
 
@@ -55,6 +51,7 @@ namespace JscServer
 
             app.UseDeveloperExceptionPage();
 
+            app.UseCors("AllowAll");
             app.UseMvc();
 
             app.UseStaticFiles();
