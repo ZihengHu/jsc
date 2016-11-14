@@ -35,7 +35,7 @@ namespace JscServer
             // Add framework services.
             services.AddMvc();
             services.AddCors(options => options.AddPolicy("AllowAll",
-                builder => builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()));
+                builder => builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader().SetPreflightMaxAge(TimeSpan.FromHours(1))));
 
             services.AddDbContext<JscDbContext>(options => options.UseMySql(Configuration.GetConnectionString("mysql")));
 
