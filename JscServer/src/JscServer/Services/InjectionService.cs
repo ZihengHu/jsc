@@ -42,7 +42,8 @@ namespace JscServer.Services
         public async Task<Injection> InjectAsync(string url)
         {
             var content = await DownloadAsync(url).ConfigureAwait(false);
-            var id = Identify(content);
+            // use url and content to identity a file
+            var id = Identify(url + content);
             var fileName = id + ".js";
 
             var existingInjection = _context.Injections.Where(i => i.Id == id).FirstOrDefault();
