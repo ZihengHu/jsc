@@ -20,7 +20,7 @@ namespace JscServer.Services
 
     public class JsCoverInjectionService : IInjectionService
     {
-        private static object injectLock = new object();
+        private static SemaphoreSlim injectSemaphore = new SemaphoreSlim(1, 1);
 
         private JscDbContext _context;
         private IHostingEnvironment _env;
@@ -52,12 +52,10 @@ namespace JscServer.Services
             {
                 return existingInjection;
             }
-            
-            var lockTaken = false;
-            try
-            {
-                Monitor.Enter(injectLock, ref lockTaken);
 
+            await injectSemaphore.WaitAsync().ConfigureAwait(false);
+            try
+            { 
                 existingInjection = _context.Injections.Where(i => i.Id == id).FirstOrDefault();
 
                 if (existingInjection != null)
@@ -82,7 +80,7 @@ namespace JscServer.Services
             }
             finally
             {
-                if (lockTaken) Monitor.Exit(injectLock);
+                injectSemaphore.Release();
             }
 
         }
