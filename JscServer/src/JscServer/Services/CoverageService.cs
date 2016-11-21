@@ -13,7 +13,7 @@ namespace JscServer.Services
     {
         Task MergeCoverageAsync(Coverage newCoverage);
 
-        Task<Coverage> GetCoverageAsync(string url);
+        Task<Coverage> GetCoverageAsync(string id);
     }
 
     public class JsCoverCoverageService : ICoverageService
@@ -82,9 +82,9 @@ namespace JscServer.Services
             }
         }
 
-        public async Task<Coverage> GetCoverageAsync(string url)
+        public async Task<Coverage> GetCoverageAsync(string id)
         {
-            return await Task.FromResult(_context.Coverages.Where(c => c.Url == url).OrderByDescending(c => c.InsertTime).FirstOrDefault()).ConfigureAwait(false);
+            return await Task.FromResult(_context.Coverages.Where(c => c.Id == id).FirstOrDefault()).ConfigureAwait(false);
         }
 
     }

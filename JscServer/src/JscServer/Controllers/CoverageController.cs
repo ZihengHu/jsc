@@ -26,9 +26,9 @@ namespace JscServer.Controllers
         }
 
         [HttpGet]
-        public async Task<Coverage[]> GetAsync([FromQuery(Name = "url")] string[] urls)
+        public async Task<Coverage[]> GetAsync([FromQuery(Name = "id")] string[] ids)
         {
-            return await Task.WhenAll(urls.Select(url => _coverageService.GetCoverageAsync(url))).ConfigureAwait(false);
+            return await Task.WhenAll(ids.Select(id => _coverageService.GetCoverageAsync(id))).ConfigureAwait(false);
         }
     }
 }
