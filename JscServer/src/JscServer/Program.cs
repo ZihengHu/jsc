@@ -15,11 +15,13 @@ namespace JscServer
         {
             var config = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("hosting.json", optional: false)
+                .AddJsonFile("appsettings.json", optional: false)
                 .Build();
 
             var host = new WebHostBuilder()
-                .UseKestrel()
+                .UseKestrel(options => options.UseHttps(
+                    config.GetSection("ssl.certificate").GetValue<string>("file"),
+                    config.GetSection("ssl.certificate").GetValue<string>("password")))
                 .UseConfiguration(config)
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseIISIntegration()
