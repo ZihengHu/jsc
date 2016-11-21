@@ -50,7 +50,7 @@
       "wwwroot",
       "**/*.cshtml",
       "appsettings.json",
-      "hosting.json",
+      "server.pfx",
       "jscover.jar",
       "web.config"
     ]
