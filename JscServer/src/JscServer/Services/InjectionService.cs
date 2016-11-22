@@ -111,7 +111,7 @@ namespace JscServer.Services
 
             Process cmd = new Process();
             cmd.StartInfo.FileName = "cmd.exe";
-            cmd.StartInfo.Arguments = string.Format("/C java -jar {0} -io {1} > {2}", _jsCoverExecutablePath, originalFile, outputFile);
+            cmd.StartInfo.Arguments = string.Format("/C java -Dfile.encoding=UTF-8 -jar {0} -io {1} > {2}", _jsCoverExecutablePath, originalFile, outputFile);
             cmd.StartInfo.RedirectStandardError = true;
             cmd.StartInfo.CreateNoWindow = true;
             cmd.StartInfo.UseShellExecute = false;
