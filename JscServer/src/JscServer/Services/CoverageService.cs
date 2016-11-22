@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
 
 namespace JscServer.Services
 {
@@ -21,16 +22,22 @@ namespace JscServer.Services
         private static SemaphoreSlim mergeSemaphore = new SemaphoreSlim(1, 1);
         private JscDbContext _context;
 
+        private JsonSerializerSettings _jsonSerializerSettings;
+
         public JsCoverCoverageService(JscDbContext context)
         {
             _context = context;
+            _jsonSerializerSettings = new JsonSerializerSettings
+            {
+                ContractResolver = new CamelCasePropertyNamesContractResolver()
+            };
         }
 
         public async Task MergeCoverageAsync(Coverage newCoverage)
         {
             await mergeSemaphore.WaitAsync().ConfigureAwait(false);
             try
-            {                
+            {
                 var oldCoverage = _context.Coverages.Where(c => c.Id == newCoverage.Id).FirstOrDefault();
 
                 if (oldCoverage == null)
@@ -39,8 +46,8 @@ namespace JscServer.Services
                 }
                 else
                 {
-                    var oldCoverageData = JsonConvert.DeserializeObject<CoverageData>(oldCoverage.Data);
-                    var newCoverageData = JsonConvert.DeserializeObject<CoverageData>(newCoverage.Data);
+                    var oldCoverageData = JsonConvert.DeserializeObject<CoverageData>(oldCoverage.Data, _jsonSerializerSettings);
+                    var newCoverageData = JsonConvert.DeserializeObject<CoverageData>(newCoverage.Data, _jsonSerializerSettings);
 
                     var mergedCoverageData = new CoverageData() { };
 
@@ -48,7 +55,7 @@ namespace JscServer.Services
                     mergedCoverageData.FunctionData = oldCoverageData.FunctionData.Select((n, i) => n + newCoverageData.FunctionData.ElementAt(i));
 
                     mergedCoverageData.BranchData = new Dictionary<string, IEnumerable<BranchData>>();
-                    foreach(KeyValuePair<string, IEnumerable<BranchData>> entry in oldCoverageData.BranchData)
+                    foreach (KeyValuePair<string, IEnumerable<BranchData>> entry in oldCoverageData.BranchData)
                     {
                         mergedCoverageData.BranchData.Add(entry.Key, entry.Value.Select((oldBranchData, i) =>
                         {
@@ -72,7 +79,7 @@ namespace JscServer.Services
                         }));
                     }
 
-                    oldCoverage.Data = JsonConvert.SerializeObject(mergedCoverageData);
+                    oldCoverage.Data = JsonConvert.SerializeObject(mergedCoverageData, _jsonSerializerSettings);
                 }
                 await _context.SaveChangesAsync().ConfigureAwait(false);
             }
