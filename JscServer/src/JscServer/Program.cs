@@ -21,7 +21,7 @@ namespace JscServer
             var host = new WebHostBuilder()
                 .UseKestrel(options =>
                 {
-                    var sslSection = config.GetSection("ssl.certificate");
+                    var sslSection = config.GetSection("ssl");
                     if (sslSection.GetValue<bool>("enable"))
                     {
                         options.UseHttps(
