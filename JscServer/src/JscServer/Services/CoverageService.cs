@@ -49,7 +49,7 @@ namespace JscServer.Services
                     var oldCoverageData = JsonConvert.DeserializeObject<CoverageData>(oldCoverage.Data, _jsonSerializerSettings);
                     var newCoverageData = JsonConvert.DeserializeObject<CoverageData>(newCoverage.Data, _jsonSerializerSettings);
 
-                    var mergedCoverageData = new CoverageData() { };
+                    var mergedCoverageData = new CoverageData();
 
                     mergedCoverageData.LineData = oldCoverageData.LineData.Select((n, i) => n + newCoverageData.LineData.ElementAt(i));
                     mergedCoverageData.FunctionData = oldCoverageData.FunctionData.Select((n, i) => n + newCoverageData.FunctionData.ElementAt(i));

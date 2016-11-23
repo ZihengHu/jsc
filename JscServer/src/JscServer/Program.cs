@@ -19,9 +19,16 @@ namespace JscServer
                 .Build();
 
             var host = new WebHostBuilder()
-                .UseKestrel(options => options.UseHttps(
-                    config.GetSection("ssl.certificate").GetValue<string>("file"),
-                    config.GetSection("ssl.certificate").GetValue<string>("password")))
+                .UseKestrel(options =>
+                {
+                    var sslSection = config.GetSection("ssl.certificate");
+                    if (sslSection.GetValue<bool>("enable"))
+                    {
+                        options.UseHttps(
+                        sslSection.GetValue<string>("file"),
+                        sslSection.GetValue<string>("password"));
+                    }
+                })
                 .UseConfiguration(config)
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseIISIntegration()
