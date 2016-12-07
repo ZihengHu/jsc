@@ -19,10 +19,10 @@ namespace JscServer.Services
 
     public class JsCoverCoverageService : ICoverageService
     {
-        private static SemaphoreSlim mergeSemaphore = new SemaphoreSlim(1, 1);
-        private JscDbContext _context;
+        private static readonly SemaphoreSlim _mergeSemaphore = new SemaphoreSlim(1, 1);
+        private readonly JscDbContext _context;
 
-        private JsonSerializerSettings _jsonSerializerSettings;
+        private readonly JsonSerializerSettings _jsonSerializerSettings;
 
         public JsCoverCoverageService(JscDbContext context)
         {
@@ -35,10 +35,10 @@ namespace JscServer.Services
 
         public async Task MergeCoverageAsync(Coverage newCoverage)
         {
-            await mergeSemaphore.WaitAsync().ConfigureAwait(false);
+            await _mergeSemaphore.WaitAsync().ConfigureAwait(false);
             try
             {
-                var oldCoverage = _context.Coverages.Where(c => c.Id == newCoverage.Id).FirstOrDefault();
+                var oldCoverage = _context.Coverages.FirstOrDefault(c => c.Id == newCoverage.Id);
 
                 if (oldCoverage == null)
                 {
@@ -85,13 +85,13 @@ namespace JscServer.Services
             }
             finally
             {
-                mergeSemaphore.Release();
+                _mergeSemaphore.Release();
             }
         }
 
         public async Task<Coverage> GetCoverageAsync(string id)
         {
-            return await Task.FromResult(_context.Coverages.Where(c => c.Id == id).FirstOrDefault()).ConfigureAwait(false);
+            return await Task.FromResult(_context.Coverages.FirstOrDefault(c => c.Id == id)).ConfigureAwait(false);
         }
 
     }

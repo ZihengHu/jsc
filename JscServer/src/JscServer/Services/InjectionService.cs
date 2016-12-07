@@ -20,23 +20,21 @@ namespace JscServer.Services
 
     public class JsCoverInjectionService : IInjectionService
     {
-        private static SemaphoreSlim injectSemaphore = new SemaphoreSlim(1, 1);
+        private static readonly SemaphoreSlim _injectSemaphore = new SemaphoreSlim(1, 1);
 
-        private JscDbContext _context;
-        private IHostingEnvironment _env;
+        private readonly JscDbContext _context;
 
-        private string _jsCoverExecutablePath;
-        private string _originalJsPath;
-        private string _injectedJsPath;
+        private readonly string _jsCoverExecutablePath;
+        private readonly string _originalJsPath;
+        private readonly string _injectedJsPath;
 
         public JsCoverInjectionService(JscDbContext context, IHostingEnvironment env)
         {
             _context = context;
-            _env = env;
 
-            _jsCoverExecutablePath = Path.Combine(_env.ContentRootPath, "jscover.jar");
-            _originalJsPath = Path.Combine(_env.ContentRootPath, "wwwroot", "jsc", "original");
-            _injectedJsPath = Path.Combine(_env.ContentRootPath, "wwwroot", "jsc", "injected");
+            _jsCoverExecutablePath = Path.Combine(env.ContentRootPath, "jscover.jar");
+            _originalJsPath = Path.Combine(env.ContentRootPath, "wwwroot", "jsc", "original");
+            _injectedJsPath = Path.Combine(env.ContentRootPath, "wwwroot", "jsc", "injected");
         }
 
         public async Task<Injection> InjectAsync(string url)
@@ -46,17 +44,17 @@ namespace JscServer.Services
             var id = Identify(url + content);
             var fileName = id + ".js";
 
-            var existingInjection = _context.Injections.Where(i => i.Id == id).FirstOrDefault();
+            var existingInjection = _context.Injections.FirstOrDefault(i => i.Id == id);
 
             if (existingInjection != null)
             {
                 return existingInjection;
             }
 
-            await injectSemaphore.WaitAsync().ConfigureAwait(false);
+            await _injectSemaphore.WaitAsync().ConfigureAwait(false);
             try
             { 
-                existingInjection = _context.Injections.Where(i => i.Id == id).FirstOrDefault();
+                existingInjection = _context.Injections.FirstOrDefault(i => i.Id == id);
 
                 if (existingInjection != null)
                 {
@@ -80,7 +78,7 @@ namespace JscServer.Services
             }
             finally
             {
-                injectSemaphore.Release();
+                _injectSemaphore.Release();
             }
 
         }
