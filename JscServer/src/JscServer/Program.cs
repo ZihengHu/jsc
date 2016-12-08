@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Hosting.WindowsServices;
 
 namespace JscServer
 {
@@ -13,8 +15,12 @@ namespace JscServer
     {
         public static void Main(string[] args)
         {
+            var isDebugging = Debugger.IsAttached || args.Contains("--debug");
+
+            string currentDirectory = isDebugging ? Directory.GetCurrentDirectory() : Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName);
+
             var config = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
+                .SetBasePath(currentDirectory)
                 .AddJsonFile("appsettings.json", optional: false)
                 .Build();
 
@@ -25,17 +31,24 @@ namespace JscServer
                     if (sslSection.GetValue<bool>("enable"))
                     {
                         options.UseHttps(
-                        sslSection.GetValue<string>("file"),
-                        sslSection.GetValue<string>("password"));
+                            sslSection.GetValue<string>("file"),
+                            sslSection.GetValue<string>("password"));
                     }
                 })
                 .UseConfiguration(config)
-                .UseContentRoot(Directory.GetCurrentDirectory())
+                .UseContentRoot(currentDirectory)
                 .UseIISIntegration()
                 .UseStartup<Startup>()
                 .Build();
 
-            host.Run();
+            if (isDebugging)
+            {
+                host.Run();
+            }
+            else
+            {
+                host.RunAsService();
         }
+    }
     }
 }
